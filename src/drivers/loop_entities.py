@@ -1,9 +1,12 @@
 from time import sleep
 
 from uwazi_api.UwaziAdapter import UwaziAdapter
+from domain.UwaziEntity import UwaziEntity
 
 
 def loop_entities():
+    a = UwaziEntity(identifier="1")
+    print(a)
     index = 1000
     while True:
         print("Looping entities...")

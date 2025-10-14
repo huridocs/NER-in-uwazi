@@ -1,7 +1,7 @@
 import requests
-from drivers.rest.response_entities.NamedEntitiesResponse import NamedEntitiesResponse
+from ner_in_docker.drivers.rest.response_entities.NamedEntitiesResponse import NamedEntitiesResponse
 
-from domain.UwaziEntity import UwaziEntity
+from src.domain.UwaziEntity import UwaziEntity
 from config import NER_IN_DOCKER_URL, NER_IN_DOCKER_PORT, NAMESPACE
 
 

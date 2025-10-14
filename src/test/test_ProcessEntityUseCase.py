@@ -1,3 +1,5 @@
+from ner_in_docker.domain.NamedEntityType import NamedEntityType
+from ner_in_docker.drivers.rest.response_entities.NamedEntitiesResponse import NamedEntitiesResponse
 
 from domain.UwaziEntity import UwaziEntity
 from use_cases.ProcessEntityUseCase import ProcessEntityUseCase
@@ -6,7 +8,7 @@ from use_cases.ProcessEntityUseCase import ProcessEntityUseCase
 class TestProcessEntityUseCase:
 
     def setup_method(self):
-        self.use_case = ProcessEntityUseCase(repository=None)
+        self.use_case = ProcessEntityUseCase()
 
     def test_get_ner_entities_with_person_organization_location(self):
         entity = UwaziEntity(
@@ -21,10 +23,10 @@ class TestProcessEntityUseCase:
         assert len(result.entities) > 0
 
         entity_texts = [e.text for e in result.entities]
-        entity_labels = [e.label for e in result.entities]
+        entity_labels = [e.type for e in result.entities]
 
         assert any("John Smith" in text or "Smith" in text for text in entity_texts)
-        assert "PERSON" in entity_labels
+        assert NamedEntityType.PERSON in entity_labels
 
     def test_get_ner_entities_with_document_code(self):
         entity = UwaziEntity(

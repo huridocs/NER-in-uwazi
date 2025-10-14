@@ -1,2 +1,2 @@
 git+https://github.com/huridocs/python_uwazi_API@2025.10.14.3
-git+https://github.com/huridocs/NER-in-docker@2025.10.14.8
+git+https://github.com/huridocs/NER-in-docker@2025.10.14.15
