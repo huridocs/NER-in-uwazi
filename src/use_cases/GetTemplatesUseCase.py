@@ -1,33 +1,32 @@
 from uwazi_api.UwaziAdapter import UwaziAdapter
 
-from config import USER, PASSWORD, URL
+from config import USER_NAME, PASSWORD, URL, LANGUAGES
 from domain.NamedEntityType import NamedEntityType
 
 
 class GetTemplatesUseCase:
+    NAMES: dict[NamedEntityType, str] = {
+        NamedEntityType.PERSON: 'Person',
+        NamedEntityType.ORGANIZATION: 'Organization',
+        NamedEntityType.LOCATION: 'Location',
+        NamedEntityType.LAW: 'Law',
+        NamedEntityType.DATE: 'Date',
+        NamedEntityType.DOCUMENT_CODE: 'Reference Code'
+    }
+
     def __init__(self):
+        self.uwazi_adapter = UwaziAdapter(user=USER_NAME, password=PASSWORD, url=URL)
         self.templates_by_type: dict[NamedEntityType, str] = dict()
-        self.uwazi_adapter = UwaziAdapter(user=USER, password=PASSWORD, url=URL)
         self.set_templates()
 
     def set_templates(self):
-        language = "en"
-        templates = self.uwazi_adapter.templates.get(language)
+        templates = self.uwazi_adapter.templates.get()
         for template in templates:
             name = template['name']
-            if name == 'Person':
-                self.templates_by_type[NamedEntityType.PERSON] = template['_id']
-            elif name == 'Organization':
-                self.templates_by_type[NamedEntityType.ORGANIZATION] = template['_id']
-            elif name == 'Location':
-                self.templates_by_type[NamedEntityType.LOCATION] = template['_id']
-            elif name == 'Law':
-                self.templates_by_type[NamedEntityType.LAW] = template['_id']
-            elif name == 'Date':
-                self.templates_by_type[NamedEntityType.DATE] = template['_id']
-            elif name == 'Reference Code':
-                self.templates_by_type[NamedEntityType.DOCUMENT_CODE] = template['_id']
-
+            for ner_type, ner_name in self.NAMES.items():
+                if name == ner_name:
+                    self.templates_by_type[ner_type] = template['_id']
+                    break
 
     def get(self, ner_type: NamedEntityType) -> str:
         if ner_type not in self.templates_by_type:
@@ -36,9 +35,47 @@ class GetTemplatesUseCase:
         if ner_type not in self.templates_by_type:
             self.create_template(ner_type)
 
-        self.set_templates()
-
         return self.templates_by_type[ner_type]
 
     def create_template(self, ner_type: NamedEntityType):
-        pass
+        template_data = {"name": self.NAMES[ner_type],
+                         "color": "#628ccf",
+                         "properties": [],
+                         "commonProperties": [
+                             {"label": "Title", "name": "title", "type": "text", "isCommonProperty": True},
+                             {"label": "Date added", "name": "creationDate", "type": "date", "isCommonProperty": True},
+                             {"label": "Date modified", "name": "editDate", "type": "date", "isCommonProperty": True}]}
+
+        if ner_type == NamedEntityType.LOCATION:
+            template_data["properties"].append(
+                {"type": "geolocation",
+                 "label": "Geolocation",
+                 "noLabel": False,
+                 "required": False,
+                 "showInCard": False,
+                 "filter": False,
+                 "defaultfilter": False,
+                 "prioritySorting": False,
+                 "style": "",
+                 "generatedId": False})
+        try:
+            response = self.uwazi_adapter.templates.set(LANGUAGES[0], template_data)
+        except Exception as e:
+            print(f"Error creating template for {ner_type}: {e}")
+            return False
+
+        if response and '_id' in response:
+            self.templates_by_type[ner_type] = response['_id']
+            return True
+
+        return False
+
+
+if __name__ == '__main__':
+    use_case = GetTemplatesUseCase()
+    for ner_type in NamedEntityType:
+        if ner_type != NamedEntityType.LOCATION:
+            continue
+        template_id = use_case.create_template(ner_type)
+        print(f"Template for {ner_type.value}: {template_id}")
+        break
