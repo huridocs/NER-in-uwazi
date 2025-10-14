@@ -1,7 +1,7 @@
+from ner_in_docker.domain.NamedEntityType import NamedEntityType
 from uwazi_api.UwaziAdapter import UwaziAdapter
 
 from config import USER_NAME, PASSWORD, URL, LANGUAGES
-from domain.NamedEntityType import NamedEntityType
 
 
 class GetTemplatesUseCase:

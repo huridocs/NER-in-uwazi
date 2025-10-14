@@ -20,7 +20,7 @@
         [x] DATE = "DATE"
         [x] LAW = "LAW"
         [x] DOCUMENT_CODE = "DOCUMENT_CODE"
-    [ ] Query NER-in-docker
+    [x] Query NER-in-docker
     [ ] Create new entities for the text and PDF appearances
     [ ] Link entities to each other
         [ ] Create relationships for each NER type

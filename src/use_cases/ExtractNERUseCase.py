@@ -2,10 +2,15 @@ from time import sleep
 
 from uwazi_api.UwaziAdapter import UwaziAdapter
 
+from use_cases.CreateUwaziEntitiesUseCase import CreateUwaziEntitiesUseCase
+
 
 class ExtractNERUseCase:
     BATCH_SIZE = 300
     OVERLAP = 15
+
+    def __init__(self):
+        self.create_uwazi_entities_use_case = CreateUwaziEntitiesUseCase()
 
     def execute(self):
         index = 0
