@@ -1,0 +1,2 @@
+tqdm
+git+https://github.com/huridocs/python_uwazi_API@2025.10.14.3
