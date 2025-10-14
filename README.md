@@ -13,16 +13,19 @@
     [x] Identifier
         [x] shared_id language property_name MD5
     [x] Loop entities
+    [x] Create templates for the different entities types
+        [x] PERSON = "PERSON"
+        [x] ORGANIZATION = "ORGANIZATION"
+        [x] LOCATION = "LOCATION"
+        [x] DATE = "DATE"
+        [x] LAW = "LAW"
+        [x] DOCUMENT_CODE = "DOCUMENT_CODE"
     [ ] Query NER-in-docker
-    [ ] Create templates for the different entities types
-        [ ] PERSON = "PERSON"
-        [ ] ORGANIZATION = "ORGANIZATION"
-        [ ] LOCATION = "LOCATION"
-        [ ] DATE = "DATE"
-        [ ] LAW = "LAW"
-        [ ] DOCUMENT_CODE = "DOCUMENT_CODE"
     [ ] Create new entities for the text and PDF appearances
     [ ] Link entities to each other
-
+        [ ] Create relationships for each NER type
+        [ ] Create relation property in templates
+    [ ] Download PDF and process them
+    [ ] Create text references
 Ali
     [ ] Add geolocalization

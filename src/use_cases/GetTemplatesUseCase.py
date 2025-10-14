@@ -30,34 +30,47 @@ class GetTemplatesUseCase:
 
     def get(self, ner_type: NamedEntityType) -> str:
         if ner_type not in self.templates_by_type:
-            self.set_templates()
-
-        if ner_type not in self.templates_by_type:
             self.create_template(ner_type)
 
         return self.templates_by_type[ner_type]
 
-    def create_template(self, ner_type: NamedEntityType):
-        template_data = {"name": self.NAMES[ner_type],
-                         "color": "#628ccf",
-                         "properties": [],
-                         "commonProperties": [
-                             {"label": "Title", "name": "title", "type": "text", "isCommonProperty": True},
-                             {"label": "Date added", "name": "creationDate", "type": "date", "isCommonProperty": True},
-                             {"label": "Date modified", "name": "editDate", "type": "date", "isCommonProperty": True}]}
+    @staticmethod
+    def _create_property(prop_type: str, label: str) -> dict:
+        return {
+            "type": prop_type,
+            "label": label,
+            "noLabel": False,
+            "required": False,
+            "showInCard": False,
+            "filter": False,
+            "defaultfilter": False,
+            "prioritySorting": False,
+            "style": "",
+            "generatedId": False
+        }
+
+    def _get_template_properties(self, ner_type: NamedEntityType) -> list[dict]:
+        properties = []
 
         if ner_type == NamedEntityType.LOCATION:
-            template_data["properties"].append(
-                {"type": "geolocation",
-                 "label": "Geolocation",
-                 "noLabel": False,
-                 "required": False,
-                 "showInCard": False,
-                 "filter": False,
-                 "defaultfilter": False,
-                 "prioritySorting": False,
-                 "style": "",
-                 "generatedId": False})
+            properties.append(self._create_property("geolocation", "Geolocation"))
+        elif ner_type == NamedEntityType.DATE:
+            properties.append(self._create_property("date", "Date"))
+
+        return properties
+
+    def create_template(self, ner_type: NamedEntityType):
+        template_data = {
+            "name": self.NAMES[ner_type],
+            "color": "#628ccf",
+            "properties": self._get_template_properties(ner_type),
+            "commonProperties": [
+                {"label": "Title", "name": "title", "type": "text", "isCommonProperty": True},
+                {"label": "Date added", "name": "creationDate", "type": "date", "isCommonProperty": True},
+                {"label": "Date modified", "name": "editDate", "type": "date", "isCommonProperty": True}
+            ]
+        }
+
         try:
             response = self.uwazi_adapter.templates.set(LANGUAGES[0], template_data)
         except Exception as e:
