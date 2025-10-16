@@ -21,11 +21,125 @@
         [x] LAW = "LAW"
         [x] DOCUMENT_CODE = "DOCUMENT_CODE"
     [x] Query NER-in-docker
+    [ ] Check if entity already processed
     [ ] Create new entities for the text and PDF appearances
     [ ] Link entities to each other
         [ ] Create relationships for each NER type
         [ ] Create relation property in templates
     [ ] Download PDF and process them
     [ ] Create text references
+    [ ] Avoid loading group entities every time a group should be created
+    [ ] Fulfill custom fields like
+        [ ] Geolocalozation
+        [ ] Date
+
 Ali
+
     [ ] Add geolocalization
+
+
+SPEED RUN
+
+    [x] Get documents
+    [x] Query NER-in-docker with PDF
+    [x] Check if group exist in Uwazi
+        [x] Create uwazi entity regarding the group if does not exist
+    [ ] Create connection    
+    [ ] Get selection by words not by segment
+
+Create reference:
+
+{
+  "delete": [],
+  "save": [
+    [
+      {
+        "entity": "0mg4pkm4y78n",
+        "template": null,
+        "reference": {
+          "text": "29 DE JULIO DE 1991",
+          "selectionRectangles": [
+            {
+              "top": 172.94667742693863,
+              "left": 335.66813738787613,
+              "width": 155.3464233398437,
+              "height": 17.629629629629626,
+              "page": "1"
+            }
+          ]
+        },
+        "file": "68f098050058648f7a83c35f"
+      },
+      {
+        "entity": "cos3av69d98",
+        "template": "68f097b60058648f7a83c307"
+      }
+    ]
+  ]
+}
+
+
+
+import requests
+
+cookies = {
+    'locale': 'en',
+    '_pk_id.1.1fff': '7422e55bd6924caa.1759739219.',
+    'connect.sid': 's%3A6Z05kDJRaW29W6-q5TXqcV5ano4AycFF.pKqEqZB%2B2AbCASUyhJQTyABl8Qs0Otld6nSjucNpSIE',
+}
+
+headers = {
+    'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64; rv:143.0) Gecko/20100101 Firefox/143.0',
+    'Accept': 'application/json',
+    'Accept-Language': 'en-US,en;q=0.5',
+    # 'Accept-Encoding': 'gzip, deflate, br, zstd',
+    'Content-Type': 'application/json',
+    'X-Requested-With': 'XMLHttpRequest',
+    'Content-Language': 'en',
+    'Origin': 'http://localhost:3000',
+    'Sec-GPC': '1',
+    'Connection': 'keep-alive',
+    # 'Cookie': 'locale=en; _pk_id.1.1fff=7422e55bd6924caa.1759739219.; connect.sid=s%3A6Z05kDJRaW29W6-q5TXqcV5ano4AycFF.pKqEqZB%2B2AbCASUyhJQTyABl8Qs0Otld6nSjucNpSIE',
+    'Sec-Fetch-Dest': 'empty',
+    'Sec-Fetch-Mode': 'cors',
+    'Sec-Fetch-Site': 'same-origin',
+    'Priority': 'u=0',
+}
+
+json_data = {
+    'delete': [],
+    'save': [
+        [
+            {
+                'entity': '0mg4pkm4y78n',
+                'template': None,
+                'reference': {
+                    'text': '29 DE JULIO DE 1991',
+                    'selectionRectangles': [
+                        {
+                            'top': 172.94667742693863,
+                            'left': 335.66813738787613,
+                            'width': 155.3464233398437,
+                            'height': 17.629629629629626,
+                            'page': '1',
+                        },
+                    ],
+                },
+                'file': '68f098050058648f7a83c35f',
+            },
+            {
+                'entity': 'cos3av69d98',
+                'template': '68f097b60058648f7a83c307',
+            },
+        ],
+    ],
+}
+
+response = requests.post('http://localhost:3000/api/relationships/bulk', cookies=cookies, headers=headers, json=json_data)
+
+# Note: json_data will not be serialized by requests
+# exactly as it was in the original request.
+#data = '{"delete":[],"save":[[{"entity":"0mg4pkm4y78n","template":null,"reference":{"text":"29 DE JULIO DE 1991","selectionRectangles":[{"top":172.94667742693863,"left":335.66813738787613,"width":155.3464233398437,"height":17.629629629629626,"page":"1"}]},"file":"68f098050058648f7a83c35f"},{"entity":"cos3av69d98","template":"68f097b60058648f7a83c307"}]]}'
+#response = requests.post('http://localhost:3000/api/relationships/bulk', cookies=cookies, headers=headers, data=data)
+
+

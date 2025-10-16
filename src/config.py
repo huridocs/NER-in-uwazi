@@ -1,4 +1,8 @@
 import os
+from pathlib import Path
+
+ROOT_FOLDER = Path(__file__).parent.parent
+PDFS_FOLDER = ROOT_FOLDER / "pdfs"
 
 USER_NAME = os.getenv("USER_NAME", "admin")
 PASSWORD = os.getenv("PASSWORD", "admin")

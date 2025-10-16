@@ -1,24 +1,26 @@
 import requests
 from ner_in_docker.drivers.rest.response_entities.NamedEntitiesResponse import NamedEntitiesResponse
 
-from src.domain.UwaziEntity import UwaziEntity
+from src.domain.UwaziProperty import UwaziProperty
 from config import NER_IN_DOCKER_URL, NER_IN_DOCKER_PORT, NAMESPACE
 
 
 class ProcessEntityUseCase:
-    def get_ner_entities(self, entity: UwaziEntity) -> NamedEntitiesResponse | None:
+    @staticmethod
+    def get_ner_response(uwazi_property: UwaziProperty) -> NamedEntitiesResponse | None:
         ner_url = f"{NER_IN_DOCKER_URL}:{NER_IN_DOCKER_PORT}/"
 
         form_data = {
             "namespace": NAMESPACE,
-            "identifier": entity.identifier,
-            "text": entity.text if hasattr(entity, 'text') else None,
+            "identifier": uwazi_property.identifier,
+            "text": uwazi_property.text if hasattr(uwazi_property, 'text') else None,
             "fast": False
         }
 
         files = None
-        if entity.pdf_path:
-            files = {"file": entity.pdf_path}
+        if uwazi_property.pdf_path:
+            with open(uwazi_property.pdf_path, 'rb') as f:
+                files = {"file": f.read()}
 
         try:
             response = requests.post(ner_url, data=form_data, files=files)

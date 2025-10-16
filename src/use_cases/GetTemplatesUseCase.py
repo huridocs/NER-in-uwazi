@@ -14,6 +14,15 @@ class GetTemplatesUseCase:
         NamedEntityType.DOCUMENT_CODE: 'Reference Code'
     }
 
+    RELATION_IDS: dict[NamedEntityType, str] = {
+        NamedEntityType.PERSON: 'Person',
+        NamedEntityType.ORGANIZATION: 'Organization',
+        NamedEntityType.LOCATION: 'Location',
+        NamedEntityType.LAW: 'Law',
+        NamedEntityType.DATE: 'Date',
+        NamedEntityType.DOCUMENT_CODE: 'Reference Code'
+    }
+
     def __init__(self):
         self.uwazi_adapter = UwaziAdapter(user=USER_NAME, password=PASSWORD, url=URL)
         self.templates_by_type: dict[NamedEntityType, str] = dict()
