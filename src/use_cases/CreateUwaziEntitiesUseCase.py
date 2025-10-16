@@ -1,5 +1,4 @@
 from ner_in_docker.domain.NamedEntityType import NamedEntityType
-from ner_in_docker.drivers.rest.response_entities.GroupResponse import GroupResponse
 from ner_in_docker.drivers.rest.response_entities.NamedEntitiesResponse import NamedEntitiesResponse
 from uwazi_api.Reference import Reference, SelectionRectangle
 from uwazi_api.UwaziAdapter import UwaziAdapter
@@ -27,26 +26,49 @@ class CreateUwaziEntitiesUseCase:
         self.get_templates_use_case = GetTemplatesUseCase()
         self.uwazi_groups = UwaziGroups()
 
-    def create_entities(self, uwazi_property: UwaziProperty, named_entity_response: NamedEntitiesResponse):
-        for group in named_entity_response.groups:
-            if group.type not in TYPES_TO_PROCESS:
-                continue
-            template_id = self.get_templates_use_case.get(group.type)
-            self.set_group_in_uwazi(template_id, group.type, group.group_name)
+    def create_entities_from_text(self, uwazi_property: UwaziProperty, named_entity_response: NamedEntitiesResponse):
+        if not uwazi_property.text:
+            return
 
         for entity in named_entity_response.entities:
             if entity.type not in TYPES_TO_PROCESS:
                 continue
+
             group_shared_id = self.uwazi_groups.get_group(entity.type, entity.group_name)
+            uwazi_entity = self.uwazi_adapter.entities.get_one(group_shared_id, language=LANGUAGES[0])
+            if not uwazi_entity:
+                continue
+
+            reference_key = f'{str(entity.type).lower()}_references'
+
+            metadata = uwazi_entity.get('metadata', {})
+            relationships = metadata.get(reference_key, [])
+            relationships.append({
+                "value": uwazi_property.shared_id,
+            })
+
+            metadata[reference_key] = relationships
+            uwazi_entity['metadata'] = metadata
+            self.uwazi_adapter.entities.upload(uwazi_entity, LANGUAGES[0])
+            print(f"Created relationship [{entity.type}] {entity.text} // {uwazi_property.shared_id}")
+
+    def create_entities_from_pdf(self, uwazi_property: UwaziProperty, named_entity_response: NamedEntitiesResponse):
+        for entity in named_entity_response.entities:
+            if entity.type not in TYPES_TO_PROCESS:
+                continue
+            group_shared_id = self.uwazi_groups.get_group(entity.type, entity.group_name)
+            selection_rectangles = []
+            for text_position in entity.text_positions:
+                selection_rectangles.append(
+                    SelectionRectangle(top=text_position.top / 0.75,
+                                       left=text_position.left / 0.75,
+                                       width=text_position.width / 0.75,
+                                       height=text_position.height / 0.75,
+                                       page=str(entity.segment.page_number)
+                                       ))
             reference = Reference(
                 text=entity.text,
-                selection_rectangles=[
-                    SelectionRectangle(top=entity.segment.bounding_box.top / 0.75,
-                                       left=entity.segment.bounding_box.left / 0.75,
-                                       width=entity.segment.bounding_box.width / 0.75,
-                                       height=entity.segment.bounding_box.height / 0.75,
-                                       page=str(entity.segment.page_number)
-                                       )])
+                selection_rectangles=selection_rectangles)
 
             self.uwazi_adapter.relationships.create(
                 file_entity_shared_id=uwazi_property.shared_id,
@@ -56,7 +78,19 @@ class CreateUwaziEntitiesUseCase:
                 relationship_type_id=self.RELATIONSHIP_IDS[entity.type],
                 language=LANGUAGES[0])
 
-            print(f"Created relationship for entity {entity.text} of type {entity.type} in document {uwazi_property.shared_id}")
+            print(f"Created relationship [{entity.type}] {entity.text} // {uwazi_property.shared_id}")
+
+    def create_entities(self, uwazi_property: UwaziProperty, named_entity_response: NamedEntitiesResponse):
+        for group in named_entity_response.groups:
+            if group.type not in TYPES_TO_PROCESS:
+                continue
+            template_id = self.get_templates_use_case.get(group.type)
+            self.set_group_in_uwazi(template_id, group.type, group.group_name)
+
+        if not uwazi_property.file_id:
+            self.create_entities_from_text(uwazi_property, named_entity_response)
+        else:
+            self.create_entities_from_pdf(uwazi_property, named_entity_response)
 
     def set_group_in_uwazi(self, template_id: str, named_entity_type: NamedEntityType, group_name: str):
         if not self.uwazi_groups.get_group(group_type=named_entity_type, group_name=group_name):
@@ -70,9 +104,6 @@ class CreateUwaziEntitiesUseCase:
                       "documents": []}
             shared_id = self.uwazi_adapter.entities.upload(entity=entity, language=LANGUAGES[0])
             self.uwazi_groups.add_group(named_entity_type, group_name, shared_id)
-
-    def create_group_in_uwazi(self, group_response: GroupResponse):
-        pass
 
     def get_groups_from_uwazi(self, template_id: str, named_entity_type: NamedEntityType):
         index = 0

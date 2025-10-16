@@ -1,7 +1,6 @@
 import os
 from pathlib import Path
 
-from PIL.TiffTags import TYPES
 from ner_in_docker.domain.NamedEntityType import NamedEntityType
 
 ROOT_FOLDER = Path(__file__).parent.parent
@@ -13,6 +12,7 @@ URL = os.getenv("URL", "http://localhost:3000")
 LANGUAGES = os.getenv("LANGUAGE", "en").split(",")
 TEMPLATES = os.getenv("TEMPLATES", "5bfbb1a0471dd0fc16ada146").split(",")
 NAMESPACE = os.getenv("NAMESPACE", "default")
+PROPERTIES_TO_PROCESS = os.getenv("PROPERTIES_TO_PROCESS", "content").split(",")
 
 TYPES_TO_PROCESS = [
     NamedEntityType.PERSON,

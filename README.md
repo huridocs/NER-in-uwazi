@@ -34,6 +34,11 @@
         [ ] Date
     [ ] Get right the languages used
     [ ] Check if references are already created
+    [x] NER-in-docker does not normalice some dates text because other languages an so
+    [ ] Get selection by words not by segment
+        [ ] Use PDFFeatures for that matter
+    [ ] Use pdf-features in NER-in-docker
+    [ ] Docuement code is not working
 
 Ali
 
@@ -48,8 +53,11 @@ SPEED RUN
         [x] Create uwazi entity regarding the group if does not exist
     [x] Create connection   
         [x] divide possitions by 0.75
-    [ ] Check why dates are not standard??
-    [ ] Get selection by words not by segment
+    [x] Check why dates are not standard??
+    [x] Get selection by words not by segment
+    [ ] Add references for text properties
+    [ ] Bounding boxes accuracy
+    [ ] Processing speed
 
 Create reference:
 
