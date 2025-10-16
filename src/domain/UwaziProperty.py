@@ -11,6 +11,7 @@ class UwaziProperty(BaseModel):
     property_name: str = None
     text: str = None
     pdf_path: Path = None
+    file_id: str = None
 
     @model_validator(mode='after')
     def set_identifier(self):

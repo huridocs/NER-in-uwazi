@@ -32,6 +32,8 @@
     [ ] Fulfill custom fields like
         [ ] Geolocalozation
         [ ] Date
+    [ ] Get right the languages used
+    [ ] Check if references are already created
 
 Ali
 
@@ -44,7 +46,9 @@ SPEED RUN
     [x] Query NER-in-docker with PDF
     [x] Check if group exist in Uwazi
         [x] Create uwazi entity regarding the group if does not exist
-    [ ] Create connection    
+    [x] Create connection   
+        [x] divide possitions by 0.75
+    [ ] Check why dates are not standard??
     [ ] Get selection by words not by segment
 
 Create reference:

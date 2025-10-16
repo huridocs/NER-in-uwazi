@@ -3,11 +3,10 @@ import traceback
 
 from uwazi_api.UwaziAdapter import UwaziAdapter
 
-from config import USER_NAME, PASSWORD, URL, PDFS_FOLDER, LANGUAGES, TEMPLATES
+from config import USER_NAME, PASSWORD, URL, PDFS_FOLDER, TEMPLATES
 from domain.UwaziProperty import UwaziProperty
 from use_cases.CreateUwaziEntitiesUseCase import CreateUwaziEntitiesUseCase
 from use_cases.ProcessEntityUseCase import ProcessEntityUseCase
-import hashlib
 
 class ExtractNERUseCase:
     BATCH_SIZE = 300
@@ -32,10 +31,9 @@ class ExtractNERUseCase:
             for entity in entities:
                 properties = self.get_uwazi_properties(entity)
                 for uwazi_property in properties:
-                    print(f"Processing entity {uwazi_property}")
+                    print(f"Processing entity {uwazi_property.identifier}")
                     named_entities_response = self.process_entity_use_case.get_ner_response(uwazi_property)
-                    print(f"Response {named_entities_response}")
-                    self.create_uwazi_entities_use_case.create_entities(named_entities_response)
+                    self.create_uwazi_entities_use_case.create_entities(uwazi_property, named_entities_response)
                     uwazi_property.remove_pdf()
 
             index += (self.BATCH_SIZE - self.OVERLAP)
@@ -59,7 +57,8 @@ class ExtractNERUseCase:
                         content_hash=document.get('filename'),
                         language=entity.get('language', 'en'),
                         property_name=document.get('originalname', document.get('filename')),
-                        pdf_path=pdf_path
+                        pdf_path=pdf_path,
+                        file_id=document.get('_id', None)
                     )
 
                     pdf_content = self.uwazi_adapter.files.get_document_by_file_name(pdf_filename)
@@ -70,12 +69,9 @@ class ExtractNERUseCase:
 
                     pdf_path.write_bytes(pdf_content)
 
-
                     with open(pdf_path, 'wb') as f:
                         f.write(pdf_content)
-                    
 
-                    
                     properties.append(uwazi_property)
                     
                 except Exception as e:
