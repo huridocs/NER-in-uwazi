@@ -1,4 +1,5 @@
 import traceback
+from time import time, sleep
 
 from uwazi_api.UwaziAdapter import UwaziAdapter
 
@@ -16,30 +17,7 @@ class ExtractNERUseCase:
         self.create_uwazi_entities_use_case = CreateUwaziEntitiesUseCase()
         self.uwazi_adapter = UwaziAdapter(user=USER_NAME, password=PASSWORD, url=URL)
 
-    def execute(self):
-        index = 0
-        while True:
-            print("Looping entities...")
-            entities = self.uwazi_adapter.entities.get(start_from=index, batch_size=self.BATCH_SIZE, template_id=TEMPLATES[0])
-
-            if not entities or len(entities) == 0:
-                print("No more entities found.")
-                break
-
-            print(f"Retrieved {len(entities)} entities starting from index {index}")
-            for entity in entities:
-                properties = self.get_text_properties(entity)
-                properties.extend(self.get_documents_properties(entity))
-                for uwazi_property in properties:
-                    print(f"Processing entity {uwazi_property.identifier}")
-                    named_entities_response = self.process_entity_use_case.get_ner_response(uwazi_property)
-                    self.create_uwazi_entities_use_case.create_entities(uwazi_property, named_entities_response)
-                    uwazi_property.remove_pdf()
-
-            index += (self.BATCH_SIZE - self.OVERLAP)
-
-    @staticmethod
-    def get_text_properties(entity: dict) -> list[UwaziProperty]:
+    def get_text_properties(self, entity: dict) -> list[UwaziProperty]:
         properties = []
 
         if 'metadata' not in entity:
@@ -63,6 +41,9 @@ class ExtractNERUseCase:
                 property_name=metadata_key,
                 text=text
             )
+
+            if self.process_entity_use_case.is_property_processed(uwazi_property):
+                continue
 
             properties.append(uwazi_property)
 
@@ -90,6 +71,9 @@ class ExtractNERUseCase:
                         file_id=document.get('_id', None)
                     )
 
+                    if self.process_entity_use_case.is_property_processed(uwazi_property):
+                        continue
+
                     pdf_content = self.uwazi_adapter.files.get_document_by_file_name(pdf_filename)
 
                     if not pdf_content:
@@ -110,6 +94,38 @@ class ExtractNERUseCase:
         
         return properties
 
+    def execute(self):
+        index = 0
+        print("Looping entities...")
+        while True:
+            entities = self.uwazi_adapter.entities.get(start_from=index, batch_size=self.BATCH_SIZE, template_id=TEMPLATES[0])
+
+            if not entities or len(entities) == 0:
+                index = 0
+                sleep(5)
+                continue
+
+            for entity in entities:
+                start = time()
+                properties = self.get_text_properties(entity)
+                properties.extend(self.get_documents_properties(entity))
+                for uwazi_property in properties:
+                    print(f"Processing entity {uwazi_property.identifier}")
+                    try:
+                        named_entities_response = self.process_entity_use_case.get_ner_response(uwazi_property)
+                        self.create_uwazi_entities_use_case.create_entities(uwazi_property, named_entities_response)
+                    except Exception as e:
+                        print(f"Error processing entity {uwazi_property.identifier}: {e}")
+                        traceback.print_exc()
+                        sleep(5)
+                        continue
+                    uwazi_property.remove_pdf()
+
+                if properties:
+                    print("Processed entity "+ entity['sharedId'] + f" in {time() - start:.2f}s")
+                    print("Waiting for new entities...")
+
+            index += (self.BATCH_SIZE - self.OVERLAP)
 
 if __name__ == '__main__':
     ExtractNERUseCase().execute()

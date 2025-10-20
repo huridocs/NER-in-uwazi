@@ -25,6 +25,7 @@ class CreateUwaziEntitiesUseCase:
         self.uwazi_adapter = UwaziAdapter(user=USER_NAME, password=PASSWORD, url=URL)
         self.get_templates_use_case = GetTemplatesUseCase()
         self.uwazi_groups = UwaziGroups()
+        self._loaded_types = set()
 
     def create_entities_from_text(self, uwazi_property: UwaziProperty, named_entity_response: NamedEntitiesResponse):
         if not uwazi_property.text:
@@ -94,7 +95,11 @@ class CreateUwaziEntitiesUseCase:
 
     def set_group_in_uwazi(self, template_id: str, named_entity_type: NamedEntityType, group_name: str):
         if not self.uwazi_groups.get_group(group_type=named_entity_type, group_name=group_name):
-            self.get_groups_from_uwazi(template_id, named_entity_type)
+            if named_entity_type not in self._loaded_types:
+                self._load_all_groups_for_type(template_id, named_entity_type)
+                self._loaded_types.add(named_entity_type)
+            else:
+                self._search_group_by_name(template_id, named_entity_type, group_name)
 
         if not self.uwazi_groups.get_group(group_type=named_entity_type, group_name=group_name):
             entity = {"metadata": {},
@@ -105,7 +110,20 @@ class CreateUwaziEntitiesUseCase:
             shared_id = self.uwazi_adapter.entities.upload(entity=entity, language=LANGUAGES[0])
             self.uwazi_groups.add_group(named_entity_type, group_name, shared_id)
 
-    def get_groups_from_uwazi(self, template_id: str, named_entity_type: NamedEntityType):
+    def _search_group_by_name(self, template_id: str, named_entity_type: NamedEntityType, group_name: str):
+        entities = self.uwazi_adapter.entities.get_from_text(
+            search_term=group_name,
+            template_id=template_id,
+            batch_size=300,
+            language=LANGUAGES[0]
+        )
+
+        for entity in entities:
+            if entity.get('title', '') == group_name:
+                self.uwazi_groups.add_group(named_entity_type, group_name, entity.get('sharedId', ''))
+                break
+
+    def _load_all_groups_for_type(self, template_id: str, named_entity_type: NamedEntityType):
         index = 0
         while True:
             entities = self.uwazi_adapter.entities.get(start_from=index,
@@ -119,3 +137,6 @@ class CreateUwaziEntitiesUseCase:
                 self.uwazi_groups.add_group(named_entity_type, entity.get('title', ''), entity.get('sharedId', ''))
 
             index += self.BATCH_SIZE
+
+    def get_groups_from_uwazi(self, template_id: str, named_entity_type: NamedEntityType):
+        self._load_all_groups_for_type(template_id, named_entity_type)

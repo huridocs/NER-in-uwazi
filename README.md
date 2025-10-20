@@ -21,32 +21,6 @@
         [x] LAW = "LAW"
         [x] DOCUMENT_CODE = "DOCUMENT_CODE"
     [x] Query NER-in-docker
-    [ ] Check if entity already processed
-    [ ] Create new entities for the text and PDF appearances
-    [ ] Link entities to each other
-        [ ] Create relationships for each NER type
-        [ ] Create relation property in templates
-    [ ] Download PDF and process them
-    [ ] Create text references
-    [ ] Avoid loading group entities every time a group should be created
-    [ ] Fulfill custom fields like
-        [ ] Geolocalozation
-        [ ] Date
-    [ ] Get right the languages used
-    [ ] Check if references are already created
-    [x] NER-in-docker does not normalice some dates text because other languages an so
-    [ ] Get selection by words not by segment
-        [ ] Use PDFFeatures for that matter
-    [ ] Use pdf-features in NER-in-docker
-    [ ] Docuement code is not working
-
-Ali
-
-    [ ] Add geolocalization
-
-
-SPEED RUN
-
     [x] Get documents
     [x] Query NER-in-docker with PDF
     [x] Check if group exist in Uwazi
@@ -55,9 +29,37 @@ SPEED RUN
         [x] divide possitions by 0.75
     [x] Check why dates are not standard??
     [x] Get selection by words not by segment
-    [ ] Add references for text properties
-    [ ] Bounding boxes accuracy
-    [ ] Processing speed
+    [x] NER-in-docker does not normalice some dates text because other languages an so
+    [x] Add references for text properties
+    [x] Check if entity already processed
+    [x] Create new entities for the text and PDF appearances
+    [x] Link entities to each other
+        [x] Create relationships for each NER type
+        [x] Create relation property in templates
+    [x] Download PDF and process them
+    [x] Create text references
+    [x] Get selection by words not by segment
+        [x] Use PDFFeatures for that matter
+    [x] Use pdf-features in NER-in-docker
+    [x] Avoid loading group entities every time a group should be created
+    [x] Check if references are already created
+    [ ] Improve bounding boxes accuracy
+        [ ] two lines text are not handled properly for the bounding box
+    [ ] Improve processing speed
+        [ ] With boxes 118s
+        [ ] Without 111s
+    [ ] Get right the languages used
+    [ ] Document code in NER-in-docker is not working
+    [ ] Skip entities with relationships
+    [ ] Errors 
+        [ ] Error setting relationships 422 {"error":"validation failed","validations":[{"instancePath":"/1/entity","schemaPath":"#/items/properties/entity/type","keyword":"type","params":{"type":"string"},"message":"must be string"}],"logLevel":"debug","prettyMessage":"validation failed\n/1/entity: must be string","requestId":8308}
+        [ ] Some references are linked to two different relations
+        [ ] Ner service says 2025-10-20 11:29:58,768 Warning: An empty Sentence was created! Are there empty strings in your dataset?
+    [ ] Fulfill custom fields like
+        [ ] Geolocalozation
+            [ ] Secondary loop for filling the Geolocalization data
+        [ ] Date
+
 
 Create reference:
 
